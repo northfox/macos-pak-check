@@ -1,0 +1,22 @@
+name: probe2
+on:
+  workflow_dispatch:
+jobs:
+  probe2:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        clean: [no-clean, clean]
+        rep: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+      - run: Rscript -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
+      - name: pkg_download with PPM + CRAN (poisons cache?)
+        run: Rscript probe.R both
+      - name: pkg_install afterwards
+        run: |
+          Rscript -e 'options(repos = c(RSPM = "https://packagemanager.posit.co/cran/latest", CRAN = "https://cran.rstudio.com")); if ("${{ matrix.clean }}" == "clean") pak::cache_clean(); r <- try(pak::pkg_install(c("sf", "knitr", "terra"), lib = tempfile())); cat("INSTALL ${{ matrix.clean }}", if (inherits(r, "try-error")) "FAIL" else "OK", "\n")'

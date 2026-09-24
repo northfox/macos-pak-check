@@ -9,7 +9,7 @@ options(repos = switch(mode,
 print(getOption("repos"))
 magic <- function(f) if (file.exists(f)) paste(readBin(f, "raw", 4), collapse = "") else "missing"
 fmt <- function(m) if (startsWith(m, "1f8b")) "gzip" else if (m == "28b52ffd") "zstd" else paste0("BROKEN(", m, ")")
-pak::cache_clean()
+if (!identical(Sys.getenv("KEEP_CACHE"), "1")) pak::cache_clean()
 d <- as.data.frame(pak::pkg_download(c("sf", "knitr", "terra"), dest_dir = tempfile()))
 d$src <- vapply(d$sources, `[`, "", 1)
 d$magic <- vapply(d$fulltarget, function(f) fmt(magic(f)), "")
