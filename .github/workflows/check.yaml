@@ -17,6 +17,10 @@ jobs:
       - name: Show R and repos
         run: |
           Rscript -e 'print(R.version.string); print(getOption("repos"))'
+      - name: Download only and inspect (URL and archive format)
+        run: |
+          Rscript -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch)); d <- pak::pkg_download(c("sf", "knitr", "terra")); print(names(d)); print(as.data.frame(d)[, intersect(c("package", "version", "download_status", "sources", "fulltarget"), names(d))])
+            for (f in d$fulltarget) { con <- file(f, "rb"); b <- readBin(con, "raw", 4); close(con); cat(basename(f), paste(b, collapse = ""), "\n") }'
       - name: pak install (same path as setup-r-dependencies)
         run: |
           Rscript -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch)); pak::pkg_install(c("sf", "knitr", "terra"))'
