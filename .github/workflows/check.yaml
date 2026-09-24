@@ -1,0 +1,22 @@
+name: macos-pak-check
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rspm: [default, ppm]
+    steps:
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: ${{ matrix.rspm == 'ppm' && 'always' || 'false' }}
+      - name: Show R and repos
+        run: |
+          Rscript -e 'print(R.version.string); print(getOption("repos"))'
+      - name: pak install (same path as setup-r-dependencies)
+        run: |
+          Rscript -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch)); pak::pkg_install(c("sf", "knitr", "terra"))'
